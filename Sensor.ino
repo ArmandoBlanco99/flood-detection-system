@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include "arduino_secrets.h"
 #include <HTTPClient.h>
 #include <SD.h>
 #include <SPI.h>
@@ -8,8 +9,8 @@ const int CS_PIN = 5;                    // Chip Select (GPIO5)
 File dataFile;
 
 // ====== Wi-Fi ======
-const char* WIFI_SSID = "Serchzal";   // 2.4 GHz
-const char* WIFI_PASS = "123456789";
+const char* WIFI_SSID = SECRET_SSID;   // 2.4 GHz
+const char* WIFI_PASS = SECRET_PASS;
 
 // ====== Servidor Flask (laptop) ======
 const char* LAPTOP_IP = "192.168.137.1";     // IP local laptop
