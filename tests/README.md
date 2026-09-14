@@ -13,7 +13,7 @@ Esta carpeta contiene los archivos de prueba para validar el funcionamiento del 
   - Analiza patrones de alertas
   - Compara con datos del dataset si están disponibles
 
-### `test_correccion.py` (si existe)
+### `test_correccion.py`
 - **Propósito**: Verifica que se corrigieron los problemas originales
 - **Casos de prueba**:
   - Coordenadas con bajo % de área inundable
@@ -21,25 +21,15 @@ Esta carpeta contiene los archivos de prueba para validar el funcionamiento del 
   - Coordenadas fuera de CDMX
   - Pruebas con diferentes niveles de sensor
 
-### `prueba_final.py` (si existe)
-- **Propósito**: Prueba final integral del sistema corregido
-- **Validaciones**: 
-  - Corrección de thresholds
-  - Validación geográfica
-  - Alertas apropiadas
-
 ## Cómo ejecutar los tests:
 
 ```bash
-# Desde la carpeta del proyecto
-cd /Users/armyb/Documents/TT2
-
-# Ejecutar test de coordenadas específicas
+# Desde la raíz del repositorio
 python tests/test_coordenadas_especificas.py
 
-# O ejecutar desde la carpeta tests
-cd tests
-python test_coordenadas_especificas.py
+# Este diagnóstico busca el modelo en el directorio actual
+cd src
+python ../tests/test_correccion.py
 ```
 
 ## Estructura del sistema:

@@ -149,6 +149,15 @@ bash
 python Flask_Server.py
 
 
+### Configuración Wi-Fi del ESP32
+
+Antes de compilar `Sensor.ino`, copia `arduino_secrets.h.example` como
+`arduino_secrets.h` en la misma carpeta que el sketch. Sustituye los valores
+de `SECRET_SSID` y `SECRET_PASS` por los de tu red local.
+
+`arduino_secrets.h` está excluido de Git. La plantilla
+`arduino_secrets.h.example` se conserva en el repositorio sin credenciales reales.
+
 ### Dependencias
 
 
@@ -373,7 +382,7 @@ TT2/
 │       ├── app.js              # JavaScript del frontend
 │       └── styles.css          # Estilos CSS
 ├── tests/                       # 🧪 Pruebas y validaciones
-│   ├── prueba_final.py         # Prueba integral
+│   ├── test_correccion.py      # Diagnóstico de correcciones
 │   ├── test_coordenadas_especificas.py  # Pruebas geográficas
 │   └── README.md               # Documentación de pruebas
 ├── wsgi.py                     # 🚀 Entrada para producción
@@ -385,12 +394,16 @@ TT2/
 
 ## 🧪 Pruebas
 
-### Pruebas Unitarias
+### Diagnósticos manuales
 
-bash
-cd tests
-python test_coordenadas_especificas.py
-python prueba_final.py
+```bash
+# Desde la raíz del repositorio
+python tests/test_coordenadas_especificas.py
+
+# Este diagnóstico busca el modelo en el directorio actual
+cd src
+python ../tests/test_correccion.py
+```
 
 
 ### Pruebas de Integración
