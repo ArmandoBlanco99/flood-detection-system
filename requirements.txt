@@ -1,6 +1,8 @@
-scikit-learn==1.3.2
+# Python 3.11. Match the version recorded in modelo_predictivo.pkl.
+scikit-learn==1.7.2
 pandas==2.1.4
-numpy==1.24.4
+# NumPy 1.26 supports the model's NumPy 2-style pickle module references.
+numpy==1.26.4
 matplotlib==3.8.2
 flask==3.0.0
 joblib==1.3.2
