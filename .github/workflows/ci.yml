@@ -1,0 +1,37 @@
+name: Python quality and smoke checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONUTF8: "1"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - name: Install dependencies
+        run: make install-dev
+      - name: Check dependency consistency
+        run: python -m pip check
+      - name: Lint and formatting
+        run: make lint
+      # Existing diagnostics do not assert expected results. These steps only
+      # detect execution failures; they are not regression or accuracy tests.
+      - name: Diagnostic smoke checks
+        run: make test
