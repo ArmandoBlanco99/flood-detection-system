@@ -15,7 +15,7 @@ echo [1/2] Iniciando servidor Flask...
 echo.
 
 REM Iniciar Flask en background
-start "Flask Server" cmd /k "cd /d %~dp0src && python Flask_Server.py"
+start "Flask Server" cmd /k "cd /d %~dp0..\src && python Flask_Server.py"
 
 timeout /t 3 /nobreak
 

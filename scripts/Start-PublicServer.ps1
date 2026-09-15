@@ -13,7 +13,7 @@ Write-Host ""
 
 # Verificar que estamos en la carpeta correcta
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-$srcPath = Join-Path $scriptPath "src"
+$srcPath = Join-Path $scriptPath "..\src"
 
 if (!(Test-Path $srcPath)) {
     Write-Host "❌ Error: No se encontró la carpeta 'src'" -ForegroundColor Red
