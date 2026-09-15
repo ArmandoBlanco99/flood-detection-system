@@ -39,7 +39,7 @@ the official guide; existing configuration files can interfere with Quick Tunnel
 
 `scripts/Start-PublicServer.ps1` and `scripts/start_with_cloudflare.bat` run the preconfigured named
 tunnel `sistema-inundaciones`; they do not create a Quick Tunnel. They start
-`src/Flask_Server.py`, so set `FLASK_ENV=production` in the shell first to disable
+`src/flask_server.py`, so set `FLASK_ENV=production` in the shell first to disable
 debug mode. That entry point always uses port 5000.
 
 The launchers still contain an example public hostname and a legacy WARP download

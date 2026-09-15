@@ -1,5 +1,5 @@
 # ============================================
-# Script para iniciar la aplicación con Cloudflare Tunnel
+# Start the application with Cloudflare Tunnel
 # ============================================
 
 param(
@@ -11,7 +11,7 @@ Write-Host "🌊 Sistema de Alertas de Inundaciones - CDMX" -ForegroundColor Cya
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Verificar que estamos en la carpeta correcta
+# Check that the script is in the expected directory
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $srcPath = Join-Path $scriptPath "..\src"
 
@@ -20,24 +20,24 @@ if (!(Test-Path $srcPath)) {
     exit 1
 }
 
-# Función para iniciar Flask
+# Function to start Flask
 function Start-Flask {
     Write-Host "[1/2] Iniciando servidor Flask..." -ForegroundColor Green
     Write-Host "      Puerto: 5000" -ForegroundColor Gray
     Write-Host ""
     
-    $flaskProcess = Start-Process -FilePath "python" -ArgumentList "$srcPath\Flask_Server.py" -PassThru -NoNewWindow
+    $flaskProcess = Start-Process -FilePath "python" -ArgumentList "$srcPath\flask_server.py" -PassThru -NoNewWindow
     Write-Host "✅ Flask iniciado (PID: $($flaskProcess.Id))" -ForegroundColor Green
     return $flaskProcess
 }
 
-# Función para iniciar Cloudflare Tunnel
+# Function to start Cloudflare Tunnel
 function Start-CloudflareTunnel {
     Write-Host ""
     Write-Host "[2/2] Iniciando Cloudflare Tunnel..." -ForegroundColor Green
     Write-Host ""
     
-    # Verificar que cloudflared está instalado
+    # Check that cloudflared is installed
     $cloudflaredPath = Get-Command cloudflared -ErrorAction SilentlyContinue
     if (!$cloudflaredPath) {
         Write-Host "❌ Error: cloudflared no está instalado o no está en el PATH" -ForegroundColor Red
@@ -52,7 +52,7 @@ function Start-CloudflareTunnel {
     return $tunnelProcess
 }
 
-# Iniciar procesos
+# Start the processes
 $flaskProc = Start-Flask
 
 if (!$NoTunnel) {
@@ -88,7 +88,7 @@ Write-Host "   Opción 1: Presiona Ctrl+C en ambas ventanas" -ForegroundColor Gr
 Write-Host "   Opción 2: Ejecuta 'Stop-Process -Id $($flaskProc.Id), $($tunnelProc.Id)'" -ForegroundColor Gray
 Write-Host ""
 
-# Mantener el script activo
+# Keep the script running
 while ($flaskProc.HasExited -eq $false) {
     Start-Sleep -Seconds 1
 }

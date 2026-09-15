@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Script de prueba para verificar la corrección del problema de predicción
-"""
+"""Diagnostic script to verify the prediction correction."""
 
 import sys
 from pathlib import Path
 
-# Agregar el directorio src al path
+# Add the src directory to the import path
 src_dir = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_dir))
 
-from Realtime import predecir_alerta_con_coordenadas
+from realtime import predict_alert_for_coordinates
 
 
 def main():
@@ -19,30 +17,30 @@ def main():
     print("TEST: Verificar que la coordenada problemática ahora da 39.2")
     print("=" * 70)
 
-    # Coordenada que estaba dando 48.4 pero debería dar 39.2
+    # Coordinate that returned 48.4 but should return 39.2
     lat = 19.5061618036
     lon = -99.1047492201
-    nivel_sensor = 0  # No importa para el test de riesgo_score
+    sensor_level = 0  # Does not affect the risk-score check
 
     print(f"\nCoordenadas: ({lat}, {lon})")
     print(f"Valor esperado en dataset: 39.2 (BAJO)")
     print(f"Valor que daba antes: 48.4")
     print("\nHaciendo predicción...")
 
-    resultado = predecir_alerta_con_coordenadas(lat, lon, nivel_sensor)
+    result = predict_alert_for_coordinates(lat, lon, sensor_level)
 
     print(f"\n" + "-" * 70)
     print("RESULTADO:")
     print("-" * 70)
-    print(f"Score predicho: {resultado['riesgo_score']}")
-    print(f"Clasificación: {resultado['riesgo_zona']}")
-    print(f"Alerta (sensor nivel {nivel_sensor}): {resultado['alerta']}")
+    print(f"Score predicho: {result['riesgo_score']}")
+    print(f"Clasificación: {result['riesgo_zona']}")
+    print(f"Alerta (sensor nivel {sensor_level}): {result['alerta']}")
 
-    # Verificar si es correcto
-    if resultado["riesgo_score"] == 39.2:
+    # Check whether the result is correct
+    if result["riesgo_score"] == 39.2:
         print("\n✅ CORRECTO - El problema ha sido SOLUCIONADO")
     else:
-        print(f"\n⚠️ Valor inesperado: {resultado['riesgo_score']} (esperado 39.2)")
+        print(f"\n⚠️ Valor inesperado: {result['riesgo_score']} (esperado 39.2)")
 
     print("\n" + "=" * 70)
 

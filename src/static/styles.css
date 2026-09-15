@@ -51,7 +51,7 @@ body {
     font-size: 1.1em;
 }
 
-/* Grid Principal */
+/* Main grid */
 .main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -99,7 +99,7 @@ body {
     color: var(--color-text);
 }
 
-/* Mapa */
+/* Map */
 .map-card {
     display: flex;
     flex-direction: column;
@@ -138,8 +138,8 @@ body {
     font-size: 1.1em;
 }
 
-/* Semáforo */
-.semaforo {
+/* Alert indicator */
+.alert-indicator {
     display: flex;
     align-items: center;
     gap: 30px;
@@ -148,11 +148,11 @@ body {
     border-radius: 8px;
 }
 
-.luz {
+.light {
     flex-shrink: 0;
 }
 
-.circulo {
+.circle {
     width: 100px;
     height: 100px;
     border-radius: 50%;
@@ -175,44 +175,44 @@ body {
     }
 }
 
-.circulo.verde {
+.circle.verde {
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
 }
 
-.circulo.amarillo {
+.circle.amarillo {
     background: linear-gradient(135deg, #FFC107, #ffb300);
     color: white;
 }
 
-.circulo.rojo {
+.circle.rojo {
     background: linear-gradient(135deg, #f44336, #da190b);
     color: white;
 }
 
-.circulo.gris {
+.circle.gris {
     background: linear-gradient(135deg, #9E9E9E, #757575);
     color: white;
 }
 
-.texto-alerta {
+.alert-text {
     flex: 1;
 }
 
-.alerta-label {
+.alert-label {
     font-size: 1.8em;
     font-weight: bold;
     margin-bottom: 10px;
     color: var(--color-text);
 }
 
-.alerta-description {
+.alert-description {
     font-size: 0.95em;
     color: var(--color-text-light);
     line-height: 1.5;
 }
 
-/* Información del Sensor */
+/* Sensor information */
 .sensor-info {
     display: flex;
     flex-direction: column;
@@ -240,7 +240,7 @@ body {
     color: var(--color-text);
 }
 
-/* Leyenda */
+/* Legend */
 .legend {
     display: flex;
     flex-direction: column;
@@ -285,12 +285,12 @@ body {
     color: var(--color-text);
 }
 
-/* Historial */
+/* History */
 .history-card {
     grid-column: 1 / -1;
 }
 
-.historial {
+.history {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -298,7 +298,7 @@ body {
     overflow-y: auto;
 }
 
-.evento {
+.event {
     padding: 12px;
     background: var(--color-bg);
     border-radius: 6px;
@@ -308,36 +308,36 @@ body {
     align-items: center;
 }
 
-.evento-time {
+.event-time {
     font-size: 0.85em;
     color: var(--color-text-light);
     font-weight: 600;
 }
 
-.evento-text {
+.event-text {
     flex: 1;
     margin: 0 15px;
     color: var(--color-text);
 }
 
-.evento-level {
+.event-level {
     font-weight: bold;
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.85em;
 }
 
-.evento-level.verde {
+.event-level.verde {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
 }
 
-.evento-level.amarillo {
+.event-level.amarillo {
     background: rgba(255, 193, 7, 0.2);
     color: #FFC107;
 }
 
-.evento-level.rojo {
+.event-level.rojo {
     background: rgba(244, 67, 54, 0.2);
     color: #f44336;
 }
@@ -405,12 +405,12 @@ body {
         height: 300px;
     }
 
-    .semaforo {
+    .alert-indicator {
         flex-direction: column;
         gap: 20px;
     }
 
-    .circulo {
+    .circle {
         width: 80px;
         height: 80px;
         font-size: 1.5em;
@@ -450,32 +450,32 @@ body {
         grid-template-columns: 1fr;
     }
 
-    .circulo {
+    .circle {
         width: 70px;
         height: 70px;
         font-size: 1.2em;
     }
 
-    .alerta-label {
+    .alert-label {
         font-size: 1.5em;
     }
 }
 
-/* Scrollbar Personalizado */
-.historial::-webkit-scrollbar {
+/* Custom scrollbar */
+.history::-webkit-scrollbar {
     width: 8px;
 }
 
-.historial::-webkit-scrollbar-track {
+.history::-webkit-scrollbar-track {
     background: var(--color-bg);
     border-radius: 10px;
 }
 
-.historial::-webkit-scrollbar-thumb {
+.history::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: 10px;
 }
 
-.historial::-webkit-scrollbar-thumb:hover {
+.history::-webkit-scrollbar-thumb:hover {
     background: #999;
 }

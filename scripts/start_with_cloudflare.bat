@@ -1,6 +1,6 @@
 @echo off
 REM ============================================
-REM Script para iniciar la aplicación con Cloudflare Tunnel
+REM Start the application with Cloudflare Tunnel
 REM ============================================
 
 echo.
@@ -8,14 +8,14 @@ echo 🌊 Sistema de Alertas de Inundaciones - CDMX
 echo ============================================
 echo.
 
-REM Obtener el directorio actual
+REM Get the current directory
 setlocal enabledelayedexpansion
 
 echo [1/2] Iniciando servidor Flask...
 echo.
 
-REM Iniciar Flask en background
-start "Flask Server" cmd /k "cd /d %~dp0..\src && python Flask_Server.py"
+REM Start Flask in the background
+start "Flask Server" cmd /k "cd /d %~dp0..\src && python flask_server.py"
 
 timeout /t 3 /nobreak
 
@@ -23,8 +23,8 @@ echo.
 echo [2/2] Iniciando Cloudflare Tunnel...
 echo.
 
-REM Nota: Asume que cloudflared está instalado en PATH
-REM Si no, reemplaza 'cloudflared' con la ruta completa
+REM Note: Assumes cloudflared is installed and available on PATH
+REM Otherwise, replace cloudflared with its full path
 
 cloudflared tunnel run sistema-inundaciones
 

@@ -112,8 +112,8 @@ that file and will appear in `git diff`; review them before committing.
 | Setting | Used by | Behavior |
 | --- | --- | --- |
 | `PORT` | `python wsgi.py` | Port number, default `5000`; debug remains disabled |
-| `FLASK_ENV` | `python src/Flask_Server.py` | `development` enables debug; other values disable it; port is always `5000` |
-| `src/coords_config.json` | Flask API | Persisted latitude/longitude; falls back to defaults in `Realtime.py` if absent |
+| `FLASK_ENV` | `python src/flask_server.py` | `development` enables debug; other values disable it; port is always `5000` |
+| `src/coords_config.json` | Flask API | Persisted latitude/longitude; falls back to defaults in `realtime.py` if absent |
 | `firmware/arduino_secrets.h` | ESP32 firmware | Local Wi-Fi SSID/password; ignored by Git |
 
 For example, set `$env:PORT = "5050"` in PowerShell or run
@@ -154,12 +154,12 @@ The target is a constructed score:
 risk score = 0.6 × rainfall midpoint + 0.4 × floodable-area midpoint
 ```
 
-`Modelo.py` trains a `RandomForestRegressor` with latitude/longitude as inputs,
+`train_model.py` trains a `RandomForestRegressor` with latitude/longitude as inputs,
 100 trees, maximum depth 10, and random seed 42, using an 80/20 split. It prints
 MSE and R² and displays a prediction plot. The target is not an observed flood
 outcome, and no independent field-validation accuracy is claimed.
 
-At inference time, `Realtime.py` first checks the processed dataset within
+At inference time, `realtime.py` first checks the processed dataset within
 ±0.0001 degrees in both coordinates and uses the first match. It uses the model
 when there is no match. Risk bands and the sensor level then determine the alert.
 Coordinates outside the configured Mexico City bounds produce a warning; they
@@ -170,12 +170,12 @@ To regenerate artifacts deliberately:
 ```bash
 # From the repository root, with the environment activated
 cd src
-python procesar_dataset.py
-python Modelo.py
+python process_dataset.py
+python train_model.py
 ```
 
-Preprocessing replaces `src/dataset_procesado.csv`. Training replaces
-`src/modelo_predictivo.pkl` **after the plot window closes**. These generated files
+Preprocessing replaces `src/processed_dataset.csv`. Training replaces
+`src/predictive_model.pkl` **after the plot window closes**. These generated files
 remain tracked because the demo depends on them. Only load a trusted model file:
 joblib serialization can execute code during loading.
 
@@ -201,9 +201,9 @@ Without Make, the checks are:
 python -m ruff check .
 python -m ruff format --check .
 python tests/test_fix.py
-python tests/test_coordenadas_especificas.py
+python tests/test_specific_coordinates.py
 cd src
-python ../tests/test_correccion.py
+python ../tests/test_correction.py
 ```
 
 The current diagnostic scripts **do not assert expected results or fail on an
@@ -231,10 +231,10 @@ firmware/arduino_secrets.h.example  Wi-Fi configuration template
 scripts/Start-PublicServer.ps1 Windows PowerShell launcher
 scripts/start_with_cloudflare.bat  Windows batch launcher
 wsgi.py                       Local server entry point / exported WSGI app
-src/Flask_Server.py            API and coordinate persistence
-src/Realtime.py                Dataset lookup, inference, and alert rules
-src/procesar_dataset.py        Dataset preparation
-src/Modelo.py                  Random Forest training
+src/flask_server.py            API and coordinate persistence
+src/realtime.py                Dataset lookup, inference, and alert rules
+src/process_dataset.py         Dataset preparation
+src/train_model.py             Random Forest training
 src/templates/                Dashboard HTML
 src/static/                   JavaScript and CSS
 src/*.csv, src/*.pkl           Demo data and trained model

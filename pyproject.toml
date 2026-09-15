@@ -12,9 +12,9 @@ ignore = ["F541"]
 # These script entry points intentionally set sys.path before importing modules.
 "wsgi.py" = ["E402"]
 "tests/test_fix.py" = ["E402"]
-"tests/test_coordenadas_especificas.py" = ["E402"]
+"tests/test_specific_coordinates.py" = ["E402"]
 # Preserve the existing NumPy import in the training pipeline.
-"src/procesar_dataset.py" = ["F401"]
+"src/process_dataset.py" = ["F401"]
 
 [tool.ruff.format]
 quote-style = "double"

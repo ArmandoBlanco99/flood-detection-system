@@ -6,9 +6,9 @@ for incorrect results. They are not an automated regression-test suite.
 
 | Script | What it exercises |
 | --- | --- |
-| `test_fix.py` | Calls the actual `Realtime.predecir_alerta_con_coordenadas` function and prints whether a known dataset coordinate returns score 39.2 |
-| `test_coordenadas_especificas.py` | Tests the currently configured point `(19.526544451, -99.165879364)` with all four sensor levels and compares dataset/model scores |
-| `test_correccion.py` | Prints several correction scenarios, including a low-risk point and coordinates outside Mexico City |
+| `test_fix.py` | Calls the actual `realtime.predict_alert_for_coordinates` function and prints whether a known dataset coordinate returns score 39.2 |
+| `test_specific_coordinates.py` | Tests the currently configured point `(19.526544451, -99.165879364)` with all four sensor levels and compares dataset/model scores |
+| `test_correction.py` | Prints several correction scenarios, including a low-risk point and coordinates outside Mexico City |
 
 The two scripts in this directory implement their own copies of inference/alert
 rules. They do not exercise the current dataset-first production inference path.
@@ -23,10 +23,10 @@ From the repository root, with the virtual environment activated:
 
 ```bash
 python tests/test_fix.py
-python tests/test_coordenadas_especificas.py
+python tests/test_specific_coordinates.py
 # This script resolves the model relative to the working directory.
 cd src
-python ../tests/test_correccion.py
+python ../tests/test_correction.py
 ```
 
 On Windows, set `$env:PYTHONUTF8 = "1"` if your terminal cannot print the scripts'

@@ -4,7 +4,7 @@
 #include <SD.h>
 #include <SPI.h>
 
-// ====== Tarjeta SD ======
+// ====== SD card ======
 const int CS_PIN = 5;                    // Chip Select (GPIO5)
 File dataFile;
 
@@ -12,20 +12,20 @@ File dataFile;
 const char* WIFI_SSID = SECRET_SSID;   // 2.4 GHz
 const char* WIFI_PASS = SECRET_PASS;
 
-// ====== Servidor Flask (laptop) ======
-const char* LAPTOP_IP = "192.168.137.1";     // IP local laptop
+// ====== Flask server (laptop) ======
+const char* LAPTOP_IP = "192.168.137.1";     // Laptop’s local IP address
 const uint16_t HTTP_PORT = 5000;
 const char* HTTP_PATH = "/ingest";
 
-// ====== Sensor 4–20 mA vía shunt ======
-const int   SENSOR_PIN = 35;                  // ADC1_CH6 (solo-entrada)
-const int   NUM_AVG    = 1000;                // Promedio anti-ruido
+// ====== 4–20 mA sensor through a shunt resistor ======
+const int   SENSOR_PIN = 35;                  // ADC1_CH6 (input-only)
+const int   NUM_AVG    = 1000;                // Averaging for noise reduction
 const float R_SHUNT    = 150.0f;              // Ω
 
-// ====== Conexión Wi-Fi con reintento ======
+// ====== Wi-Fi connection with retries ======
 void initSD() {
   Serial.print("Inicializando tarjeta SD...");
-  SPI.begin();  // SCLK=18, MOSI=23, MISO=19 (pines por defecto ESP32)
+  SPI.begin();  // SCLK=18, MOSI=23, MISO=19 (default ESP32 pins)
   
   if (!SD.begin(CS_PIN)) {
     Serial.println("\nError: Tarjeta SD no detectada");
@@ -33,7 +33,7 @@ void initSD() {
   }
   Serial.println(" OK");
 
-  // Crear encabezado si el archivo no existe
+  // Create the header if the file does not exist
   if (!SD.exists("/datos.csv")) {
     dataFile = SD.open("/datos.csv", FILE_WRITE);
     if (dataFile) {
@@ -59,7 +59,7 @@ void saveToSD(float v_shunt, float pct) {
   }
 }
 
-// ====== Conexión Wi-Fi con reintento ======
+// ====== Wi-Fi connection with retries ======
 void waitForWiFi() {
   Serial.print("Conectando al Wi-Fi");
   WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -85,19 +85,19 @@ void setup() {
   delay(800);
 
   analogReadResolution(12);                       // 0..4095
-  analogSetPinAttenuation(SENSOR_PIN, ADC_11db);  // hasta ~3.3 V
+  analogSetPinAttenuation(SENSOR_PIN, ADC_11db);  // Up to approximately 3.3 V
 
   initSD();
   waitForWiFi();
 }
 
 void loop() {
-  // --- Lectura promedio en mV ---
+  // --- Average reading in mV ---
   long sum_mV = 0;
   for (int i = 0; i < NUM_AVG; i++) {
     sum_mV += analogReadMilliVolts(SENSOR_PIN);
   }
-  const float v_shunt = (sum_mV / (float)NUM_AVG) / 1000.0f; // Voltios
+  const float v_shunt = (sum_mV / (float)NUM_AVG) / 1000.0f; // Volts
 
   // --- 4–20 mA → % ---
   const float i_mA = (v_shunt / R_SHUNT) * 1000.0f;          // I=V/R → mA
@@ -107,7 +107,7 @@ void loop() {
 
   String json = "{\"v\":" + String(v_shunt, 3) + ",\"pct\":" + String(pct, 2) + "}";
 
-  // Guardar en tarjeta SD
+  // Save to the SD card
   saveToSD(v_shunt, pct);
 
   if (WiFi.status() != WL_CONNECTED) waitForWiFi();
@@ -130,6 +130,6 @@ void loop() {
   }
   http.end();
 
-  delay(10000); // cada 10 s
+  delay(10000); // Every 10 seconds
 }
 

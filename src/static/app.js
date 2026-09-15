@@ -1,39 +1,39 @@
-// Variables globales
+// Global variables
 let map;
 let marker;
-let historialEventos = [];
-const MAX_HISTORIAL = 50;
+let eventHistory = [];
+const MAX_HISTORY = 50;
 
-// Emojis para diferentes estados
+// Emojis for different statuses
 const emojis = {
     VERDE: '🟢',
     AMARILLO: '🟡',
     ROJO: '🔴'
 };
 
-// Inicializar cuando el DOM esté listo
+// Initialize when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    inicializarMapa();
-    inicializarActualizaciones();
+    initializeMap();
+    initializeUpdates();
     setupCoordsForm();
     fetchCoords();
 });
 
-// Inicializar el mapa con Leaflet
-function inicializarMapa() {
-    // Coordenadas por defecto: CDMX Centro
-    const coordInicial = [19.4326, -99.1332];
+// Initialize the Leaflet map
+function initializeMap() {
+    // Default coordinates: central Mexico City
+    const initialCoordinates = [19.4326, -99.1332];
     
-    map = L.map('map').setView(coordInicial, 13);
+    map = L.map('map').setView(initialCoordinates, 13);
     
-    // Agregar tiles del mapa
+    // Add map tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
     }).addTo(map);
     
-    // Crear marcador
-    marker = L.marker(coordInicial, {
+    // Create the marker
+    marker = L.marker(initialCoordinates, {
         icon: L.icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -44,208 +44,215 @@ function inicializarMapa() {
         })
     }).addTo(map);
     
-    // Hacer ping inicial para obtener datos
-    actualizarEstado();
+    // Fetch initial data
+    updateStatus();
 }
 
-// Actualizar estado cada 2 segundos
-function inicializarActualizaciones() {
-    actualizarEstado();
-    setInterval(actualizarEstado, 2000);
+// Update status every two seconds
+function initializeUpdates() {
+    updateStatus();
+    setInterval(updateStatus, 2000);
 }
 
-// Actualizar el estado de la predicción
-async function actualizarEstado() {
+// Update prediction status
+async function updateStatus() {
     try {
         const response = await fetch('/api/status');
-        const datos = await response.json();
+        const data = await response.json();
         
-        // Actualizar elementos en la página
-        actualizarUI(datos);
+        // Update page elements
+        updateUI(data);
         
-        // Actualizar mapa
-        if (datos.coordenadas) {
-            actualizarMapa(datos.coordenadas);
+        // Update the map
+        if (data.coordenadas) {
+            updateMap(data.coordenadas);
         }
         
-        // Actualizar estado de conexión
-        actualizarEstadoConexion('online');
+        // Update connection status
+        updateConnectionStatus('online');
     } catch (error) {
         console.error('Error al obtener estado:', error);
-        actualizarEstadoConexion('offline');
+        updateConnectionStatus('offline');
     }
 }
 
-// Actualizar elementos de la interfaz
-function actualizarUI(datos) {
-    const { alerta, riesgo_zona, riesgo_score, nivel_sensor, coordenadas, mensaje } = datos;
+// Update interface elements
+function updateUI(data) {
+    const {
+        alerta: alert,
+        riesgo_zona: zoneRisk,
+        riesgo_score: riskScore,
+        nivel_sensor: sensorLevel,
+        coordenadas: coordinates,
+        mensaje: message
+    } = data;
     
-    // Actualizar coordenadas
-    if (coordenadas) {
-        document.getElementById('lat').textContent = coordenadas.latitud.toFixed(6);
-        document.getElementById('lon').textContent = coordenadas.longitud.toFixed(6);
+    // Update coordinates
+    if (coordinates) {
+        document.getElementById('lat').textContent = coordinates.latitud.toFixed(6);
+        document.getElementById('lon').textContent = coordinates.longitud.toFixed(6);
     }
     
-    // Actualizar nivel del sensor
-    if (nivel_sensor !== undefined && nivel_sensor >= 0) {
-        document.getElementById('nivel-sensor').textContent = nivel_sensor;
+    // Update the sensor level
+    if (sensorLevel !== undefined && sensorLevel >= 0) {
+        document.getElementById('sensor-level').textContent = sensorLevel;
     } else {
-        document.getElementById('nivel-sensor').textContent = '-';
+        document.getElementById('sensor-level').textContent = '-';
     }
     
-    // Actualizar riesgo de zona
-    document.getElementById('riesgo-zona').textContent = riesgo_zona || '--';
-    document.getElementById('riesgo-score').textContent = riesgo_score || '--';
+    // Update zone risk
+    document.getElementById('zone-risk').textContent = zoneRisk || '--';
+    document.getElementById('risk-score').textContent = riskScore || '--';
     
-    // Actualizar semáforo
-    actualizarSemaforoAlerta(alerta);
+    // Update the alert indicator
+    updateAlertIndicator(alert);
     
-    // Actualizar última actualización
-    actualizarHoraUltActualizacion();
+    // Update the last-updated time
+    updateLastUpdatedTime();
     
-    // Agregar evento al historial si hay cambio
-    agregarAlHistorial(alerta, nivel_sensor, riesgo_zona, riesgo_score);
+    // Add a history event when the state changes
+    addHistoryEvent(alert, sensorLevel, zoneRisk, riskScore);
 }
 
-// Actualizar el semáforo de alerta
-function actualizarSemaforoAlerta(alerta) {
-    const circulo = document.querySelector('.circulo');
-    const label = document.getElementById('alerta-label');
-    const description = document.getElementById('alerta-description');
+// Update the alert indicator
+function updateAlertIndicator(alert) {
+    const circle = document.querySelector('.circle');
+    const label = document.getElementById('alert-label');
+    const description = document.getElementById('alert-description');
     
-    // Limpiar clases anteriores
-    circulo.classList.remove('verde', 'amarillo', 'rojo', 'gris');
+    // Remove previous classes
+    circle.classList.remove('verde', 'amarillo', 'rojo', 'gris');
     
-    // Aplicar clase nueva
-    let claseColor = alerta.toLowerCase();
-    if (claseColor === 'gris') {
-        circulo.classList.add('gris');
+    // Apply the new class
+    let colorClass = alert.toLowerCase();
+    if (colorClass === 'gris') {
+        circle.classList.add('gris');
     } else {
-        circulo.classList.add(claseColor);
+        circle.classList.add(colorClass);
     }
     
-    // Actualizar etiqueta
-    label.textContent = alerta;
+    // Update the label
+    label.textContent = alert;
     
-    // Actualizar descripción
-    const descripciones = {
+    // Update the description
+    const descriptions = {
         'VERDE': '✅ Condiciones normales - No se requiere acción',
         'AMARILLO': '⚠️ Precaución - Monitoreo continuo recomendado',
         'ROJO': '🚨 Peligro - Tomar medidas de seguridad inmediatas',
         'GRIS': '⏳ Esperando datos...'
     };
     
-    description.textContent = descripciones[alerta] || 'Estado desconocido';
+    description.textContent = descriptions[alert] || 'Estado desconocido';
 }
 
-// Actualizar mapa con nueva posición
-function actualizarMapa(coordenadas) {
-    const latlng = [coordenadas.latitud, coordenadas.longitud];
+// Update the map with the new position
+function updateMap(coordinates) {
+    const latlng = [coordinates.latitud, coordinates.longitud];
     
-    // Actualizar posición del marcador
+    // Update the marker position
     marker.setLatLng(latlng);
     
-    // Centrar el mapa (solo si es la primera actualización)
+    // Center the map only on the first update
     if (!map.hasBeenCentered) {
         map.setView(latlng, 13);
         map.hasBeenCentered = true;
     }
     
-    // Actualizar popup del marcador
+    // Update the marker popup
     const popupText = `
         <strong>Ubicación del Sensor</strong><br>
-        Lat: ${coordenadas.latitud.toFixed(6)}<br>
-        Lon: ${coordenadas.longitud.toFixed(6)}
+        Lat: ${coordinates.latitud.toFixed(6)}<br>
+        Lon: ${coordinates.longitud.toFixed(6)}
     `;
     marker.bindPopup(popupText);
 }
 
-// Agregar evento al historial
-function agregarAlHistorial(alerta, nivel_sensor, riesgo_zona, riesgo_score) {
-    const ahora = new Date();
-    const tiempo = ahora.toLocaleTimeString('es-MX', { 
+// Add an event to the history
+function addHistoryEvent(alert, sensorLevel, zoneRisk, riskScore) {
+    const now = new Date();
+    const time = now.toLocaleTimeString('es-MX', {
         hour: '2-digit', 
         minute: '2-digit', 
         second: '2-digit' 
     });
     
-    // Evitar duplicados consecutivos
-    if (historialEventos.length > 0) {
-        const ultimoEvento = historialEventos[0];
-        if (ultimoEvento.alerta === alerta && 
-            ultimoEvento.nivel_sensor === nivel_sensor) {
+    // Avoid consecutive duplicates
+    if (eventHistory.length > 0) {
+        const lastEvent = eventHistory[0];
+        if (lastEvent.alerta === alert &&
+            lastEvent.nivel_sensor === sensorLevel) {
             return;
         }
     }
     
-    const evento = {
-        tiempo,
-        alerta,
-        nivel_sensor,
-        riesgo_zona,
-        riesgo_score,
-        timestamp: ahora.getTime()
+    const event = {
+        time,
+        alerta: alert,
+        nivel_sensor: sensorLevel,
+        riesgo_zona: zoneRisk,
+        riesgo_score: riskScore,
+        timestamp: now.getTime()
     };
     
-    historialEventos.unshift(evento);
+    eventHistory.unshift(event);
     
-    // Limitar el historial
-    if (historialEventos.length > MAX_HISTORIAL) {
-        historialEventos = historialEventos.slice(0, MAX_HISTORIAL);
+    // Limit the history length
+    if (eventHistory.length > MAX_HISTORY) {
+        eventHistory = eventHistory.slice(0, MAX_HISTORY);
     }
     
-    // Actualizar vista del historial
-    actualizarVistaHistorial();
+    // Update the history view
+    updateHistoryView();
 }
 
-// Actualizar vista del historial
-function actualizarVistaHistorial() {
-    const contenedor = document.getElementById('historial');
+// Update the history view
+function updateHistoryView() {
+    const container = document.getElementById('history');
     
-    if (historialEventos.length === 0) {
-        contenedor.innerHTML = '<p class="empty-state">No hay eventos registrados aún...</p>';
+    if (eventHistory.length === 0) {
+        container.innerHTML = '<p class="empty-state">No hay eventos registrados aún...</p>';
         return;
     }
     
     let html = '';
-    for (const evento of historialEventos) {
-        const emoji = emojis[evento.alerta] || '⚪';
-        const claseColor = evento.alerta.toLowerCase();
+    for (const event of eventHistory) {
+        const emoji = emojis[event.alerta] || '⚪';
+        const colorClass = event.alerta.toLowerCase();
         
         html += `
-            <div class="evento">
-                <span class="evento-time">${evento.tiempo}</span>
-                <span class="evento-text">
-                    ${emoji} Alerta ${evento.alerta} | 
-                    Sensor: ${evento.nivel_sensor} | 
-                    Riesgo: ${evento.riesgo_zona} (${evento.riesgo_score})
+            <div class="event">
+                <span class="event-time">${event.time}</span>
+                <span class="event-text">
+                    ${emoji} Alerta ${event.alerta} |\x20
+                    Sensor: ${event.nivel_sensor} |\x20
+                    Riesgo: ${event.riesgo_zona} (${event.riesgo_score})
                 </span>
-                <span class="evento-level ${claseColor}">${evento.alerta}</span>
+                <span class="event-level ${colorClass}">${event.alerta}</span>
             </div>
         `;
     }
     
-    contenedor.innerHTML = html;
+    container.innerHTML = html;
 }
 
-// Actualizar hora de última actualización
-function actualizarHoraUltActualizacion() {
-    const ahora = new Date();
-    const tiempo = ahora.toLocaleTimeString('es-MX', {
+// Update the last-updated time
+function updateLastUpdatedTime() {
+    const now = new Date();
+    const time = now.toLocaleTimeString('es-MX', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
     });
     
-    document.getElementById('last-update').textContent = tiempo;
+    document.getElementById('last-update').textContent = time;
 }
 
-// Actualizar estado de conexión
-function actualizarEstadoConexion(estado) {
+// Update connection status
+function updateConnectionStatus(status) {
     const statusIndicator = document.getElementById('status-indicator');
     const statusText = document.getElementById('status-text');
     
-    if (estado === 'online') {
+    if (status === 'online') {
         statusIndicator.classList.remove('offline');
         statusIndicator.classList.add('online');
         statusText.textContent = 'En línea';
@@ -256,14 +263,14 @@ function actualizarEstadoConexion(estado) {
     }
 }
 
-// Mostrar notificaciones (opcional, para navegadores que lo soporten)
-function mostrarNotificacion(titulo, opciones) {
+// Show notifications, optionally, in supported browsers
+function showNotification(title, options) {
     if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(titulo, opciones);
+        new Notification(title, options);
     }
 }
 
-// Obtener coordenadas guardadas en el servidor y actualizar inputs/mapa
+// Fetch saved coordinates and update the inputs and map
 async function fetchCoords() {
     try {
         const resp = await fetch('/api/coords');
@@ -274,17 +281,17 @@ async function fetchCoords() {
         if (latEl && lonEl && coords) {
             latEl.value = coords.latitud;
             lonEl.value = coords.longitud;
-            // Actualizar UI y mapa con las coordenadas actuales
+            // Update the interface and map with the current coordinates
             document.getElementById('lat').textContent = coords.latitud.toFixed(6);
             document.getElementById('lon').textContent = coords.longitud.toFixed(6);
-            actualizarMapa(coords);
+            updateMap(coords);
         }
     } catch (err) {
         console.warn('No se pudieron obtener coordenadas:', err);
     }
 }
 
-// Configurar el formulario de coordenadas y guardar en servidor
+// Set up the coordinate form and save coordinates to the server
 function setupCoordsForm() {
     const btn = document.getElementById('save-coords');
     if (!btn) return;
@@ -313,12 +320,12 @@ function setupCoordsForm() {
                 msg.textContent = 'Coordenadas guardadas correctamente';
                 setTimeout(() => { msg.textContent = ''; }, 3000);
 
-                // Actualizar UI local y pedir nuevo estado
+                // Update the local interface and request the latest status
                 const coords = { latitud: lat, longitud: lon };
                 document.getElementById('lat').textContent = lat.toFixed(6);
                 document.getElementById('lon').textContent = lon.toFixed(6);
-                actualizarMapa(coords);
-                actualizarEstado();
+                updateMap(coords);
+                updateStatus();
             } else {
                 msg.textContent = data.error || 'Error al guardar coordenadas';
             }

@@ -15,7 +15,7 @@
         </header>
 
         <div class="main-grid">
-            <!-- Columna izquierda: Mapa -->
+            <!-- Left column: Map -->
             <div class="left-column">
                 <div class="card map-card">
                     <h2>📍 Ubicación Actual</h2>
@@ -27,42 +27,42 @@
                 </div>
             </div>
 
-            <!-- Columna derecha: Dashboard -->
+            <!-- Right column: Dashboard -->
             <div class="right-column">
-                <!-- Semáforo de Alerta -->
+                <!-- Alert indicator -->
                 <div class="card alert-card">
                     <h2>🚨 Estado de Alerta</h2>
-                    <div class="semaforo">
-                        <div class="luz" id="luz-alerta">
-                            <div class="circulo gris"></div>
+                    <div class="alert-indicator">
+                        <div class="light" id="alert-light">
+                            <div class="circle gris"></div>
                         </div>
-                        <div class="texto-alerta">
-                            <p class="alerta-label" id="alerta-label">ESPERANDO...</p>
-                            <p class="alerta-description" id="alerta-description">Inicializando sistema...</p>
+                        <div class="alert-text">
+                            <p class="alert-label" id="alert-label">ESPERANDO...</p>
+                            <p class="alert-description" id="alert-description">Inicializando sistema...</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Información del Sensor -->
+                <!-- Sensor information -->
                 <div class="card sensor-card">
                     <h2>📡 Información del Sensor</h2>
                     <div class="sensor-info">
                         <div class="sensor-item">
                             <label>Nivel del Sensor:</label>
-                            <span id="nivel-sensor" class="sensor-value">-</span>/3
+                            <span id="sensor-level" class="sensor-value">-</span>/3
                         </div>
                         <div class="sensor-item">
                             <label>Riesgo de Zona:</label>
-                            <span id="riesgo-zona" class="sensor-value">--</span>
+                            <span id="zone-risk" class="sensor-value">--</span>
                         </div>
                         <div class="sensor-item">
                             <label>Score de Riesgo:</label>
-                            <span id="riesgo-score" class="sensor-value">--</span>
+                            <span id="risk-score" class="sensor-value">--</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Coordenadas (editable) -->
+                <!-- Coordinates (editable) -->
                 <div class="card coords-card">
                     <h3>📍 Coordenadas (Editar)</h3>
                     <div class="coords-form">
@@ -75,7 +75,7 @@
                     </div>
                 </div>
 
-                <!-- Leyenda -->
+                <!-- Legend -->
                 <div class="card legend-card">
                     <h3>📋 Significado de Alertas</h3>
                     <div class="legend">
@@ -96,10 +96,10 @@
             </div>
         </div>
 
-        <!-- Historial -->
+        <!-- History -->
         <div class="card history-card">
             <h2>📊 Historial de Eventos</h2>
-            <div id="historial" class="historial">
+            <div id="history" class="history">
                 <p class="empty-state">No hay eventos registrados aún...</p>
             </div>
         </div>

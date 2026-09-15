@@ -41,7 +41,7 @@ Internet access is needed for the Leaflet CDN and map tiles.
 | `templates/index.html` | Page structure and external Leaflet assets |
 | `static/styles.css` | Responsive layout and alert appearance |
 | `static/app.js` | API polling, map, coordinates, and page-local history |
-| `Flask_Server.py` | Dashboard route and JSON endpoints |
+| `flask_server.py` | Dashboard route and JSON endpoints |
 
 The root README contains the [API reference](../README.md#api-and-repository-map).
 If the page stays in its waiting state, confirm `/ingest` received numeric `v` and
