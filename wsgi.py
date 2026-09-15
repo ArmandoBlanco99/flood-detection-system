@@ -1,6 +1,13 @@
 #!/usr/bin/env python
-"""Script for running the application in production mode.
-Requires Gunicorn: pip install gunicorn"""
+"""Local server entry point.
+
+Runs the app with Flask's built-in server via `python wsgi.py` — this
+is a local/demo server, not a production WSGI server. For genuine
+production deployment, serve this module's `app` object with a real
+WSGI server instead, e.g.:
+    pip install gunicorn
+    gunicorn wsgi:app
+"""
 
 import os
 import sys
