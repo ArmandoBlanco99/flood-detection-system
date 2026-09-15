@@ -17,10 +17,12 @@ print(f"\n📈 Dataset: {len(df)} ubicaciones únicas")
 print(f"📍 Rango de coordenadas:")
 print(f"   • Latitud: {df['latitud'].min():.6f} a {df['latitud'].max():.6f}")
 print(f"   • Longitud: {df['longitud'].min():.6f} a {df['longitud'].max():.6f}")
-print(f"⚡ Rango de riesgo: {df['riesgo_zona_score'].min():.1f} a {df['riesgo_zona_score'].max():.1f}")
+print(
+    f"⚡ Rango de riesgo: {df['riesgo_zona_score'].min():.1f} a {df['riesgo_zona_score'].max():.1f}"
+)
 
 print(f"\n🎯 Distribución por nivel de riesgo de zona:")
-print(df['nivel_riesgo_zona'].value_counts())
+print(df["nivel_riesgo_zona"].value_counts())
 
 # 2) Definir características (X) y etiqueta objetivo (y)
 # ENTRADA: [latitud, longitud] -> SALIDA: riesgo_zona_score
@@ -33,17 +35,11 @@ print(f"   • Salida: riesgo_zona_score (continuo)")
 print(f"   • Algoritmo: Random Forest Regressor")
 
 # 3) Dividir en conjunto de entrenamiento y prueba
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # 4) Crear y entrenar el modelo Random Forest Regressor
 print(f"\n🚀 Entrenando modelo...")
-modelo = RandomForestRegressor(
-    n_estimators=100,
-    random_state=42,
-    max_depth=10
-)
+modelo = RandomForestRegressor(n_estimators=100, random_state=42, max_depth=10)
 modelo.fit(X_train, y_train)
 
 # 5) Evaluar el modelo
@@ -65,10 +61,10 @@ for i, feature in enumerate(X.columns):
 # 7) Visualizar predicciones vs reales
 plt.figure(figsize=(10, 6))
 plt.scatter(y_test, y_pred, alpha=0.6)
-plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
-plt.xlabel('Riesgo Real')
-plt.ylabel('Riesgo Predicho')
-plt.title('Predicciones vs Valores Reales - Riesgo de Zona')
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--", lw=2)
+plt.xlabel("Riesgo Real")
+plt.ylabel("Riesgo Predicho")
+plt.title("Predicciones vs Valores Reales - Riesgo de Zona")
 plt.grid(True, alpha=0.3)
 plt.show()
 
