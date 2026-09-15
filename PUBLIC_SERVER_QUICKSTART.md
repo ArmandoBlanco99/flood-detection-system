@@ -1,149 +1,49 @@
-# 🌐 Hacer tu Aplicación Pública - Guía Rápida
+# Share a temporary demo
 
-## ⚡ Opción Elegida: Cloudflare Tunnel (Estable & Permanente)
+First complete the [local setup](README.md#local-setup). Use a Cloudflare Quick
+Tunnel for a short demonstration; its URL is temporary and is not a permanent
+deployment address.
 
-### ✅ Ventajas
-- ✨ URL permanente y segura
-- 🔒 Encriptación HTTPS automática
-- 🌍 Accesible desde cualquier lugar
-- 🆓 Gratuito para siempre
-- 🚀 Sin necesidad de cambiar router/puertos
+The app has no authentication. A public URL allows visitors to submit readings and
+change the shared coordinates. Only expose a demo when that access is intended;
+use access controls for a restricted audience.
 
----
+## Two terminals
 
-## 🚀 Inicio Rápido (3 pasos)
+Install **cloudflared**, the Tunnel client, from
+[Cloudflare's downloads](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/).
+Cloudflare WARP is a different product.
 
-### 1️⃣ Instalar Cloudflare CLI
+In an activated Python environment, from the repository root:
 
-```powershell
-# Opción A: Con Chocolatey
-choco install cloudflare-warp
-
-# Opción B: Descarga manual
-# https://github.com/cloudflare/cloudflare-warp/releases
+```bash
+# Terminal 1: local server, debug disabled
+python wsgi.py
 ```
 
-**Verifica la instalación:**
-```powershell
-cloudflared --version
+```bash
+# Terminal 2: temporary public tunnel
+cloudflared tunnel --url http://localhost:5000
 ```
 
-### 2️⃣ Crear y configurar el túnel
+Open the `https://...trycloudflare.com` URL printed by cloudflared. Keep both
+processes running; stop each with Ctrl+C after the demonstration. The URL may
+change when the tunnel restarts. Quick Tunnels have no uptime guarantee and are
+intended for testing: [official Quick Tunnel documentation](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/).
 
-```powershell
-# Autenticar
-cloudflared login
+If you set a different `PORT` for `wsgi.py`, pass the same port to cloudflared.
+If a Quick Tunnel fails while a local cloudflared configuration exists, consult
+the official guide; existing configuration files can interfere with Quick Tunnels.
 
-# Crear el túnel
-cloudflared tunnel create sistema-inundaciones
+## Existing launch scripts
 
-# Configurar DNS (si tienes dominio de Cloudflare)
-cloudflared tunnel route dns sistema-inundaciones sistema-inundaciones.midominio.com
-```
+`scripts/Start-PublicServer.ps1` and `scripts/start_with_cloudflare.bat` run the preconfigured named
+tunnel `sistema-inundaciones`; they do not create a Quick Tunnel. They start
+`src/Flask_Server.py`, so set `FLASK_ENV=production` in the shell first to disable
+debug mode. That entry point always uses port 5000.
 
-> 📝 Nota: Si no tienes dominio, puedes usar la URL aleatoria que genera cloudflared
+The launchers still contain an example public hostname and a legacy WARP download
+link. Use the cloudflared link above and the hostname actually configured in your
+Cloudflare account. The two-terminal commands above are the documented demo path.
 
-### 3️⃣ Iniciar todo
-
-**Opción A: Script PowerShell (Recomendado)**
-```powershell
-# Habilitar ejecución de scripts
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# Ejecutar
-.\Start-PublicServer.ps1
-```
-
-**Opción B: Dos terminales**
-```powershell
-# Terminal 1: Flask
-cd src
-python Flask_Server.py
-
-# Terminal 2: Cloudflare Tunnel
-cloudflared tunnel run sistema-inundaciones
-```
-
----
-
-## 🌐 Acceder a tu aplicación
-
-Una vez que todo esté corriendo:
-
-```
-https://sistema-inundaciones.midominio.com
-```
-
-O la URL mostrada por cloudflared si no tienes dominio.
-
----
-
-## 📖 Documentación Completa
-
-Para más detalles, consulta: `CLOUDFLARE_SETUP.md`
-
----
-
-## 🔧 Troubleshooting
-
-**"cloudflared not found"**
-```powershell
-# Verifica la instalación
-Get-Command cloudflared
-
-# Si no funciona, descárgalo manualmente
-```
-
-**"Port 5000 already in use"**
-```powershell
-# Encuentra el proceso
-Get-Process | Where-Object { $_.Name -like "*python*" }
-
-# Termínalo
-Stop-Process -Name "python" -Force
-```
-
-**"Tunnel creation failed"**
-```powershell
-# Verifica que estés autenticado
-cloudflared tunnel login
-
-# Lista tus túneles
-cloudflared tunnel list
-```
-
----
-
-## 📊 Comandos útiles
-
-```powershell
-# Ver todos los túneles
-cloudflared tunnel list
-
-# Ver logs en tiempo real
-cloudflared tunnel logs sistema-inundaciones
-
-# Eliminar un túnel
-cloudflared tunnel delete sistema-inundaciones
-
-# Cambiar el puerto (si necesitas)
-# Edita la configuración en: ~/.cloudflared/config.yml
-```
-
----
-
-## 🎯 Próximos pasos
-
-1. ✅ Instala cloudflared
-2. ✅ Crea el túnel
-3. ✅ Inicia con el script PowerShell
-4. ✅ Comparte la URL con tu equipo
-5. ✅ ¡Disfruta tu aplicación pública!
-
----
-
-**¿Necesitas ayuda?**
-- 📚 Docs oficiales: https://developers.cloudflare.com/cloudflare-one/connections/connect-applications/
-- 💬 Comunidad: https://community.cloudflare.com/
-
-Creado: Diciembre 2025
+See [the detailed guide](CLOUDFLARE_SETUP.md) for named tunnels.

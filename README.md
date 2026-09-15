@@ -1,453 +1,260 @@
-# 🌊 Sistema de Predicción de Riesgo de Inundaciones CDMX
-
-Sistema inteligente de monitoreo y predicción de riesgos de inundación para la Ciudad de México que utiliza Machine Learning para generar alertas en tiempo real basadas en datos geográficos y sensores de humedad.
-
-## 📋 Tabla de Contenidos
-
-- [Características Principales](#-características-principales)
-- [Arquitectura del Sistema](#-arquitectura-del-sistema)
-- [Componentes Principales](#-componentes-principales)
-- [Instalación](#-instalación)
-- [Uso del Sistema](#-uso-del-sistema)
-- [API Endpoints](#-api-endpoints)
-- [Modelo de Machine Learning](#-modelo-de-machine-learning)
-- [Sistema de Alertas](#-sistema-de-alertas)
-- [Despliegue](#-despliegue)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-
-## 🚀 Características Principales
-
-- *Predicción en Tiempo Real*: Análisis instantáneo basado en coordenadas geográficas y datos de sensores
-- *Machine Learning*: Modelo RandomForestRegressor entrenado con datos históricos de CDMX
-- *Interfaz Web Moderna*: Dashboard interactivo con mapa de Leaflet y actualizaciones en tiempo real
-- *Sistema de Alertas*: Semáforo de 3 niveles (Verde, Amarillo, Rojo) con lógica de negocio avanzada
-- *API REST*: Endpoints simples para integración con sensores IoT
-- *Validación Geográfica*: Verificación automática de coordenadas dentro del área metropolitana
-- *Configuración Persistente*: Almacenamiento de coordenadas y configuraciones
-- *Despliegue en la Nube*: Soporte para Cloudflare Tunnels y servidores de producción
-
-## 🏗️ Arquitectura del Sistema
-
-
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Sensor IoT    │───▶│   Flask Server   │───▶│   Dashboard     │
-│   (Arduino)     │    │   (API REST)     │    │   (Web UI)      │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                        ┌──────────────────┐
-                        │   Realtime.py    │
-                        │  (Predicción)    │
-                        └──────────────────┘
-                                │
-                                ▼
-                        ┌──────────────────┐
-                        │ Modelo ML (.pkl) │
-                        │ (RandomForest)   │
-                        └──────────────────┘
-
-
-## 🧩 Componentes Principales
-
-### 1. *Flask_Server.py* - Servidor Web Principal
-
-El corazón del sistema que maneja:
-- *API REST* para recepción de datos de sensores
-- *Servidor web* para el dashboard
-- *Gestión de coordenadas* persistentes
-- *Endpoints de estado* y configuración
-
-*Características clave:*
-- Mapeo de voltaje a nivel de sensor (0-3)
-- Almacenamiento persistente de coordenadas en JSON
-- Validación geográfica automática
-- Logging detallado para depuración
-
-python
-# Mapeo de voltaje del sensor a niveles
-if v <= 0.695:    nivel_sensor = 0  # Seco
-elif v <= 0.759:  nivel_sensor = 1  # Bajo
-elif v <= 0.812:  nivel_sensor = 2  # Medio
-else:             nivel_sensor = 3  # Alto
-
-
-### 2. *Realtime.py* - Motor de Predicción
-
-Módulo especializado en:
-- *Carga del modelo* ML entrenado
-- *Validación geográfica* de coordenadas CDMX
-- *Búsqueda en dataset* para coordenadas exactas
-- *Predicción ML* para ubicaciones nuevas
-- *Lógica de alertas* combinando riesgo de zona + sensor
-
-*Funciones principales:*
-- validar_coordenadas_cdmx(): Verifica ubicación dentro de CDMX
-- obtener_riesgo_zona(): Calcula score de riesgo geográfico
-- predecir_alerta(): Genera alerta final combinando factores
-- clasificar_riesgo_zona(): Categoriza score en BAJO/MEDIO/ALTO
-
-### 3. *Modelo.py* - Entrenamiento del Modelo ML
-
-Script para crear y entrenar el modelo:
-- *Carga de datos* procesados
-- *División* entrenamiento/prueba
-- *Entrenamiento* RandomForestRegressor
-- *Evaluación* con métricas (MSE, R²)
-- *Persistencia* del modelo entrenado
-
-*Configuración del modelo:*
-python
-RandomForestRegressor(
-    n_estimators=100,    # 100 árboles
-    random_state=42,     # Reproducibilidad
-    max_depth=10         # Prevenir overfitting
-)
-
-
-### 4. *procesar_dataset.py* - Procesamiento de Datos
-
-Transforma datos categóricos a numéricos:
-- *Mapeo de rangos* de intensidad de lluvia
-- *Conversión* de porcentajes de área inundable
-- *Cálculo de score* combinado (60% intensidad + 40% área)
-- *Eliminación* de duplicados
-- *Generación* del dataset procesado
-
-## 🔧 Instalación
-
-### Requisitos Previos
-
-- Python 3.8 o superior
-- pip (gestor de paquetes de Python)
-
-### Instalación Rápida
-
-1. *Clonar el repositorio:*
-bash
-git clone <repository-url>
-cd TT2
-
-
-2. *Instalar dependencias:*
-bash
-pip install -r requirements.txt
-
-
-3. *Procesar el dataset:*
-bash
-cd src
-python procesar_dataset.py
-
-
-4. *Entrenar el modelo:*
-bash
-python Modelo.py
-
-
-5. *Iniciar el servidor:*
-bash
-python Flask_Server.py
-
-
-### Configuración Wi-Fi del ESP32
-
-Antes de compilar `Sensor.ino`, copia `arduino_secrets.h.example` como
-`arduino_secrets.h` en la misma carpeta que el sketch. Sustituye los valores
-de `SECRET_SSID` y `SECRET_PASS` por los de tu red local.
-
-`arduino_secrets.h` está excluido de Git. La plantilla
-`arduino_secrets.h.example` se conserva en el repositorio sin credenciales reales.
-
-### Dependencias
-
-
-scikit-learn==1.3.2  # Machine Learning
-pandas==2.1.4        # Manipulación de datos
-numpy==1.24.4        # Cálculos numéricos
-matplotlib==3.8.2    # Visualización
-flask==3.0.0         # Servidor web
-joblib==1.3.2        # Serialización del modelo
-
-
-## 📊 Uso del Sistema
-
-### 1. Inicialización
-
-bash
-cd src
-python Flask_Server.py
-
-
-El servidor iniciará en http://localhost:5000
-
-### 2. Configuración de Coordenadas
-
-*Via Web UI:*
-- Acceder al dashboard
-- Usar el formulario de coordenadas
-- Las coordenadas se guardan automáticamente
-
-*Via API:*
-bash
-curl -X POST http://localhost:5000/api/coords \
-  -H "Content-Type: application/json" \
-  -d '{"lat": 19.4326, "lon": -99.1332}'
-
-
-### 3. Envío de Datos del Sensor
-
-bash
-curl -X POST http://localhost:5000/ingest \
-  -H "Content-Type: application/json" \
-  -d '{"v": 0.8, "pct": 75.5}'
-
-
-### 4. Consulta de Estado
-
-bash
-curl http://localhost:5000/api/status
-
-
-## 🌐 API Endpoints
-
-### POST /ingest
-*Descripción:* Recibe datos del sensor IoT
-*Body:*
-json
-{
-  "v": 0.8,     // Voltaje del sensor (0-3V)
-  "pct": 75.5   // Porcentaje de humedad
-}
-
-
-### GET /api/status
-*Descripción:* Obtiene el último estado de alerta
-*Response:*
-json
-{
-  "alerta": "AMARILLO",
-  "riesgo_zona": "MEDIO",
-  "riesgo_score": 58.7,
-  "nivel_sensor": 2,
-  "coordenadas": {"latitud": 19.4326, "longitud": -99.1332}
-}
-
-
-### POST /api/coords
-*Descripción:* Actualiza coordenadas del sistema
-*Body:*
-json
-{
-  "lat": 19.4326,
-  "lon": -99.1332
-}
-
-
-### GET /api/coords
-*Descripción:* Obtiene coordenadas actuales
-*Response:*
-json
-{
-  "latitud": 19.4326,
-  "longitud": -99.1332
-}
-
-
-## 🤖 Modelo de Machine Learning
-
-### Características del Modelo
-
-- *Algoritmo:* Random Forest Regressor
-- *Entradas:* Latitud y Longitud
-- *Salida:* Score de riesgo (28.5 - 80.2)
-- *Precisión:* R² Score ≈ 0.85+
-
-### Proceso de Entrenamiento
-
-1. *Preprocesamiento:*
-   - Conversión de rangos categóricos a valores numéricos
-   - Cálculo de score combinado: intensidad_mm * 0.6 + area_inundable_pct * 0.4
-
-2. *División de datos:*
-   - 80% entrenamiento
-   - 20% prueba
-
-3. *Métricas de evaluación:*
-   - Error cuadrático medio (MSE)
-   - Coeficiente de determinación (R²)
-   - Error promedio en puntos de riesgo
-
-### Mapeo de Datos Originales
-
-*Intensidad de Precipitación:*
-python
-{
-    '41 a 54': 47.5,    # BAJO
-    '54 a 60': 57.0,    # MEDIO-BAJO
-    '60 a 64': 62.0,    # MEDIO-ALTO  
-    '64 a 70': 67.0     # ALTO
-}
-
-
-*Porcentaje de Área Inundable:*
-python
-{
-    '0 a 25': 12.5,     # MUY BAJO
-    '26 a 49': 37.5,    # BAJO
-    '50 a 72': 61.0,    # MEDIO
-    '73 a 99': 86.0,    # ALTO
-    '100': 100.0        # MUY ALTO
-}
-
-
-## 🚨 Sistema de Alertas
-
-### Clasificación de Riesgo de Zona
-
-- *BAJO:* Score ≤ 45
-- *MEDIO:* Score 46-65  
-- *ALTO:* Score > 65
-
-### Lógica de Alertas
-
-La alerta final combina el riesgo geográfico con el nivel del sensor:
-
-| Riesgo Zona | Sensor 0 | Sensor 1 | Sensor 2 | Sensor 3 |
-|-------------|----------|----------|----------|----------|
-| *BAJO*    | 🟢 VERDE | 🟢 VERDE | 🟢 VERDE | 🟡 AMARILLO |
-| *MEDIO*   | 🟢 VERDE | 🟢 VERDE | 🟡 AMARILLO | 🔴 ROJO |
-| *ALTO*    | 🟢 VERDE | 🟡 AMARILLO | 🔴 ROJO | 🔴 ROJO |
-
-### Niveles de Sensor
-
-- *0:* Seco (≤ 0.695V)
-- *1:* Bajo (0.696-0.759V)
-- *2:* Medio (0.760-0.812V)
-- *3:* Alto (> 0.812V)
-
-## 🌍 Despliegue
-
-### Desarrollo Local
-
-bash
-python Flask_Server.py
-# Servidor en http://localhost:5000
-
-
-### Producción con Gunicorn
-
-bash
-pip install gunicorn
-gunicorn --bind 0.0.0.0:5000 wsgi:app
-
-
-### Cloudflare Tunnels
-
-1. *Instalar cloudflared:*
-   - Seguir guía en CLOUDFLARE_SETUP.md
-
-2. *Crear túnel:*
-bash
-cloudflared tunnel create mi-tunel-inundaciones
-
-
-3. *Configurar y ejecutar:*
-bash
-cloudflared tunnel run mi-tunel-inundaciones
-
-
-### Variables de Entorno
-
-bash
-export FLASK_ENV=production    # Modo producción
-export PORT=5000              # Puerto personalizado
-
-
-## 📁 Estructura del Proyecto
-
-
-TT2/
-├── src/                          # Código fuente principal
-│   ├── Flask_Server.py          # 🌐 Servidor web y API REST
-│   ├── Realtime.py              # 🤖 Motor de predicción ML
-│   ├── Modelo.py                # 📊 Entrenamiento del modelo
-│   ├── procesar_dataset.py      # 🔧 Procesamiento de datos
-│   ├── coords_config.json       # 📍 Coordenadas persistentes
-│   ├── Dataset - Full(Dataset).csv      # 📋 Dataset original
-│   ├── dataset_procesado.csv    # 📋 Dataset limpio y numérico
-│   ├── modelo_predictivo.pkl    # 🧠 Modelo entrenado
-│   ├── templates/               # 🎨 Templates HTML
-│   │   └── index.html          # Dashboard principal
-│   └── static/                  # 📱 Recursos estáticos
-│       ├── app.js              # JavaScript del frontend
-│       └── styles.css          # Estilos CSS
-├── tests/                       # 🧪 Pruebas y validaciones
-│   ├── test_correccion.py      # Diagnóstico de correcciones
-│   ├── test_coordenadas_especificas.py  # Pruebas geográficas
-│   └── README.md               # Documentación de pruebas
-├── wsgi.py                     # 🚀 Entrada para producción
-├── requirements.txt            # 📦 Dependencias Python
-├── CLOUDFLARE_SETUP.md        # ☁️ Guía de despliegue
-├── PUBLIC_SERVER_QUICKSTART.md # 🌐 Guía servidor público
-└── README.md                   # 📖 Documentación principal
-
-
-## 🧪 Pruebas
-
-### Diagnósticos manuales
+# TT2 — Flood-risk monitoring for Mexico City
+
+An ESP32-to-web prototype that combines sensor readings with geographic flood-risk
+scores. A Flask API receives voltage and percentage readings, a Python inference
+module combines location risk with sensor level, and a browser dashboard displays
+an alert, map, and recent events.
+
+The project demonstrates embedded acquisition, HTTP integration, tabular data
+preprocessing, Random Forest regression, and a live web interface. It is a research
+prototype; operational flood forecasting and emergency response are outside its
+validated scope.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Sensor[ESP32: analog sensor] -->|voltage and percentage over HTTP| API[Flask API]
+    Sensor --> SD[Local SD card CSV]
+    Coords[Server coordinate configuration] --> Inference[Python inference]
+    API --> Inference
+    Data[Processed geographic dataset] -->|nearby coordinate match| Inference
+    Model[Random Forest model] -->|fallback prediction| Inference
+    Inference --> Rules[Location risk plus sensor-level rules]
+    Rules --> API
+    API -->|polling| UI[JavaScript and Leaflet dashboard]
+    Raw[Original CSV] --> Preprocess[Preprocessing]
+    Preprocess --> Data
+    Data --> Training[Random Forest training]
+    Training --> Model
+```
+
+| Component | Implementation |
+| --- | --- |
+| Device | ESP32 Arduino sketch; WiFi, HTTPClient, SPI, and SD libraries |
+| API | Python / Flask; JSON ingestion and coordinate configuration |
+| ML and data | scikit-learn, pandas, NumPy, joblib; Matplotlib for training plots |
+| Dashboard | HTML, CSS, vanilla JavaScript, Leaflet 1.9.4 from a CDN |
+| Development | Ruff, GNU Make, GitHub Actions |
+
+There is no frontend build step or PlatformIO project configuration.
+
+## Local setup
+
+Use **Python 3.11**. The requirements use scikit-learn 1.7.2, the version recorded
+in the checked-in model, and NumPy 1.26.4 for its serialized array format. The old
+NumPy 1.24.4 pin cannot load the model's `numpy._core` references; NumPy documents
+this [pickle compatibility boundary](https://numpy.org/doc/2.0/numpy_2_0_migration_guide.html#note-about-pickled-files).
+The remaining direct dependency pins are preserved. Model loading
+across scikit-learn versions is [unsupported](https://scikit-learn.org/stable/model_persistence.html).
+The original training environment was not fully recorded, so these requirements
+are a reproducible starting point for this checkout, not a recovered training lockfile.
+
+From the repository root, create and activate a virtual environment:
+
+**Windows PowerShell**
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+$env:PYTHONUTF8 = "1"
+python -m pip install -r requirements-dev.txt
+python wsgi.py
+```
+
+If PowerShell blocks activation, use `.\.venv\Scripts\python.exe` directly in
+place of `python`; changing the system execution policy is unnecessary.
+
+**Linux / macOS**
 
 ```bash
-# Desde la raíz del repositorio
-python tests/test_coordenadas_especificas.py
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-dev.txt
+python wsgi.py
+```
 
-# Este diagnóstico busca el modelo en el directorio actual
+Open **http://localhost:5000**. The dashboard starts in a waiting state until it
+receives a reading. The included dataset and model allow a demo without retraining.
+For runtime and training dependencies without developer tools, install
+`requirements.txt` instead.
+
+`wsgi.py` starts Flask's built-in server with debug disabled. It is a local demo
+entry point, not a production WSGI server. It listens on all network interfaces.
+The map and Leaflet assets require an internet connection.
+
+### Try it without hardware
+
+In another terminal, send a sample reading:
+
+```powershell
+# Windows PowerShell
+Invoke-RestMethod -Method Post -Uri http://localhost:5000/ingest -ContentType 'application/json' -Body '{"v":0.8,"pct":75}'
+Invoke-RestMethod -Uri http://localhost:5000/api/status
+```
+
+```bash
+# Linux / macOS
+curl -X POST http://localhost:5000/ingest \
+  -H 'Content-Type: application/json' -d '{"v":0.8,"pct":75}'
+curl http://localhost:5000/api/status
+```
+
+These readings use the location currently saved in `src/coords_config.json`.
+To test another location, use the dashboard coordinate form. Changes persist in
+that file and will appear in `git diff`; review them before committing.
+
+## Configuration
+
+`.env.example` documents the supported variables. **The application does not load
+`.env` automatically**; set variables in your shell.
+
+| Setting | Used by | Behavior |
+| --- | --- | --- |
+| `PORT` | `python wsgi.py` | Port number, default `5000`; debug remains disabled |
+| `FLASK_ENV` | `python src/Flask_Server.py` | `development` enables debug; other values disable it; port is always `5000` |
+| `src/coords_config.json` | Flask API | Persisted latitude/longitude; falls back to defaults in `Realtime.py` if absent |
+| `firmware/arduino_secrets.h` | ESP32 firmware | Local Wi-Fi SSID/password; ignored by Git |
+
+For example, set `$env:PORT = "5050"` in PowerShell or run
+`PORT=5050 python wsgi.py` in a POSIX shell. Update client URLs to match.
+
+Each deployed sensor is intended to have a fixed physical location. **The current
+API maintains one shared location**, and the firmware payload has no device ID or
+coordinates. Independent locations for multiple simultaneous sensors require a
+separate implementation; the current coordinate form supports testing one location
+at a time.
+
+## ESP32 setup
+
+1. Install the Arduino IDE and the [Espressif ESP32 board package](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html).
+2. Open `firmware/Sensor.ino`. If the IDE asks to create a matching sketch folder, ensure
+   the sketch and local secrets header both reside in the resulting `Sensor` folder.
+3. Copy `firmware/arduino_secrets.h.example` to `firmware/arduino_secrets.h` beside the sketch and
+   fill in your Wi-Fi credentials. Only the example belongs in version control.
+4. Configure `LAPTOP_IP` and `HTTP_PORT` in the sketch for the computer running
+   Flask. The device must be able to reach that address on the network.
+5. Select your actual ESP32 board and serial port, then compile and upload.
+
+The sketch uses ADC GPIO 35, SD chip-select GPIO 5, and a configured 150-ohm shunt
+for the 4–20 mA sensor conversion. Confirm the wiring and ADC voltage limits for
+your actual board. Readings are appended to `/datos.csv` on the SD card and posted
+to `/ingest` approximately every ten seconds, plus acquisition and request time.
+
+The repository does not specify an exact board identifier or ESP32 core version;
+firmware compilation is not part of the Python CI workflow.
+
+## Data and model
+
+The original CSV contains 612 rows. Preprocessing maps rainfall and floodable-area
+categories to numbers and removes duplicates, producing 306 geographic rows.
+The target is a constructed score:
+
+```text
+risk score = 0.6 × rainfall midpoint + 0.4 × floodable-area midpoint
+```
+
+`Modelo.py` trains a `RandomForestRegressor` with latitude/longitude as inputs,
+100 trees, maximum depth 10, and random seed 42, using an 80/20 split. It prints
+MSE and R² and displays a prediction plot. The target is not an observed flood
+outcome, and no independent field-validation accuracy is claimed.
+
+At inference time, `Realtime.py` first checks the processed dataset within
+±0.0001 degrees in both coordinates and uses the first match. It uses the model
+when there is no match. Risk bands and the sensor level then determine the alert.
+Coordinates outside the configured Mexico City bounds produce a warning; they
+are not rejected.
+
+To regenerate artifacts deliberately:
+
+```bash
+# From the repository root, with the environment activated
+cd src
+python procesar_dataset.py
+python Modelo.py
+```
+
+Preprocessing replaces `src/dataset_procesado.csv`. Training replaces
+`src/modelo_predictivo.pkl` **after the plot window closes**. These generated files
+remain tracked because the demo depends on them. Only load a trusted model file:
+joblib serialization can execute code during loading.
+
+## Development commands
+
+GNU Make is optional. Activate the environment before invoking it. An alternative
+interpreter can be selected with `make PYTHON=python3.11 lint`.
+
+| Target | Purpose |
+| --- | --- |
+| `make install` | Install runtime/training dependencies |
+| `make install-dev` | Install runtime dependencies and Ruff |
+| `make run` | Run `wsgi.py` |
+| `make test` | Execute the three existing diagnostic scripts as smoke checks |
+| `make lint` | Run Ruff lint and formatting checks |
+| `make format` | Apply Ruff formatting only |
+| `make preprocess` | Regenerate the processed dataset |
+| `make train` | Train and replace the model; close the plot to finish |
+
+Without Make, the checks are:
+
+```bash
+python -m ruff check .
+python -m ruff format --check .
+python tests/test_fix.py
+python tests/test_coordenadas_especificas.py
 cd src
 python ../tests/test_correccion.py
 ```
 
+The current diagnostic scripts **do not assert expected results or fail on an
+incorrect prediction**. CI runs them to catch execution/import failures, alongside
+lint and formatting checks, on pushes and pull requests. A green workflow does not
+establish prediction accuracy. See [diagnostic details](tests/README.md).
 
-### Pruebas de Integración
+Ruff preserves existing unused imports and literal f-strings in this formatting
+pass; the documented exceptions in `pyproject.toml` avoid changing execution
+behavior. Test consolidation and stronger regression checks remain separate work.
 
-bash
-# Probar API
-curl -X POST http://localhost:5000/ingest -d '{"v":0.8,"pct":75}'
+## API and repository map
 
-# Verificar predicción
-curl http://localhost:5000/api/status
+| Route | Purpose |
+| --- | --- |
+| `GET /` | Dashboard |
+| `POST /ingest` | Accept numeric `v` and `pct`; compute current alert |
+| `GET /api/status` | Most recent result, or waiting state |
+| `GET /api/coords` | Current shared coordinates |
+| `POST /api/coords` | Accept `lat` and `lon`, persist configuration |
 
+```text
+firmware/Sensor.ino            ESP32 firmware
+firmware/arduino_secrets.h.example  Wi-Fi configuration template
+scripts/Start-PublicServer.ps1 Windows PowerShell launcher
+scripts/start_with_cloudflare.bat  Windows batch launcher
+wsgi.py                       Local server entry point / exported WSGI app
+src/Flask_Server.py            API and coordinate persistence
+src/Realtime.py                Dataset lookup, inference, and alert rules
+src/procesar_dataset.py        Dataset preparation
+src/Modelo.py                  Random Forest training
+src/templates/                Dashboard HTML
+src/static/                   JavaScript and CSS
+src/*.csv, src/*.pkl           Demo data and trained model
+src/coords_config.json        Shared location configuration
+tests/                        Existing diagnostic scripts, including test_fix.py
+.github/workflows/ci.yml       Python quality and smoke checks
+```
 
-### Pruebas de Coordenadas
+The latest API result is held in server memory; dashboard history is held in the
+browser page and resets on reload. There is no authentication, per-device storage,
+or durable event service. Input validation is limited: `/ingest` currently returns
+`ok` even when a payload is ignored. Public exposure needs a separate access-control
+and deployment review.
 
-bash
-cd src
-python Realtime.py test
+More detail: [dashboard](src/DASHBOARD_README.md),
+[temporary sharing](PUBLIC_SERVER_QUICKSTART.md),
+[Cloudflare setup](CLOUDFLARE_SETUP.md).
 
+## License
 
-## 🤝 Contribución
-
-1. Fork el repositorio
-2. Crear rama de feature (git checkout -b feature/nueva-caracteristica)
-3. Commit cambios (git commit -am 'Agregar nueva característica')
-4. Push a la rama (git push origin feature/nueva-caracteristica)
-5. Crear Pull Request
-
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo LICENSE para más detalles.
-
-## 🆘 Soporte y Contacto
-
-- *Issues:* Usar el sistema de issues de GitHub
-- *Documentación:* Ver archivos .md en el repositorio
-- *Pruebas:* Ejecutar scripts en la carpeta tests/
-
-## 🔄 Versionado
-
-- *v1.0.0:* Versión inicial con modelo ML básico
-- *v1.1.0:* Interfaz web y API REST
-- *v1.2.0:* Sistema de coordenadas persistentes
-- *v1.3.0:* Despliegue en la nube y optimizaciones
-
----
-
-Sistema desarrollado para la prevención de riesgos de inundación en la Ciudad de México utilizando tecnologías modernas de Machine Learning e IoT.
+The project code is available under the [MIT license](LICENSE). The repository
+does not currently document the original dataset's source or redistribution terms;
+verify those terms before redistributing the data or making provenance claims.

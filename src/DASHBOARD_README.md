@@ -1,158 +1,48 @@
-# 🌊 Dashboard Web - Sistema de Alerta de Inundaciones
+# Web dashboard
 
-## 📋 Descripción
+The dashboard presents the latest prediction from the Flask API, a Leaflet map,
+a coordinate form, and a browser-local history of alert changes.
 
-Se ha creado una interfaz web moderna para visualizar en tiempo real:
-- 📍 **Ubicación actual** con mapa interactivo
-- 🚨 **Semáforo de alerta** (VERDE/AMARILLO/ROJO)
-- 📡 **Información del sensor** (nivel, riesgo, score)
-- 📊 **Historial de eventos** actualizado en tiempo real
+## Start and send a reading
 
-## 🚀 Cómo usar
+Follow the [root setup guide](../README.md), then run from the repository root:
 
-### 1. Iniciar el servidor Flask
-
-```powershell
-cd src
-python Flask_Server.py
+```bash
+python wsgi.py
 ```
 
-El servidor estará disponible en: **http://localhost:5000**
-
-### 2. Abrir en el navegador
-
-Accede a `http://localhost:5000` desde tu navegador web.
-
-### 3. Enviar datos del sensor
-
-El sistema espera datos JSON en el endpoint `/ingest`:
+Open http://localhost:5000. In a second terminal, simulate a device reading:
 
 ```powershell
-# Ejemplo con PowerShell
-$data = @{
-    v = 0.5
-    pct = 25.5
-} | ConvertTo-Json
-
-Invoke-WebRequest -Uri "http://localhost:5000/ingest" `
-    -Method POST `
-    -Headers @{"Content-Type" = "application/json"} `
-    -Body $data
+Invoke-RestMethod -Method Post -Uri http://localhost:5000/ingest -ContentType 'application/json' -Body '{"v":0.8,"pct":75}'
 ```
 
-O con curl:
 ```bash
 curl -X POST http://localhost:5000/ingest \
-  -H "Content-Type: application/json" \
-  -d '{"v": 0.5, "pct": 25.5}'
+  -H 'Content-Type: application/json' -d '{"v":0.8,"pct":75}'
 ```
 
-## 📁 Estructura de archivos
+The page polls `/api/status`; no frontend package installation or build is needed.
+Internet access is needed for the Leaflet CDN and map tiles.
 
-```
-src/
-├── Flask_Server.py           # Servidor principal
-├── Realtime.py               # Lógica de predicción
-├── templates/
-│   └── index.html           # Página web principal
-└── static/
-    ├── styles.css           # Estilos CSS
-    └── app.js               # Lógica JavaScript del cliente
-```
+## Configuration and state
 
-## 🎨 Características de la interfaz
+- The coordinate form reads/writes `/api/coords`. Saving it updates
+  `src/coords_config.json`; the setting is shared by all incoming readings.
+- The API retains the latest prediction in memory. Restarting the server clears it.
+- Event history is kept in the page's JavaScript memory. Reloading clears it.
+- The firmware sends voltage and percentage, without a sensor identifier or location.
+  Multiple independently located sensors are not implemented.
 
-### Mapa Interactivo
-- Usa Leaflet.js (OpenStreetMap)
-- Marcador dinámico que se actualiza con las coordenadas
-- Zoom y desplazamiento libres
+## Implementation
 
-### Semáforo de Alerta
-- **🟢 VERDE**: Condiciones normales
-- **🟡 AMARILLO**: Precaución - Monitoreo continuo
-- **🔴 ROJO**: Peligro - Medidas inmediatas
+| File | Responsibility |
+| --- | --- |
+| `templates/index.html` | Page structure and external Leaflet assets |
+| `static/styles.css` | Responsive layout and alert appearance |
+| `static/app.js` | API polling, map, coordinates, and page-local history |
+| `Flask_Server.py` | Dashboard route and JSON endpoints |
 
-### Información en Tiempo Real
-- Nivel del sensor (0-3)
-- Riesgo de zona (BAJO/MEDIO/ALTO)
-- Score de riesgo (numérico)
-- Coordenadas actuales
-- Hora de última actualización
-
-### Historial de Eventos
-- Registro automático de cambios de alerta
-- Últimos 50 eventos
-- Timestamp de cada evento
-- Evita duplicados consecutivos
-
-## 🔌 Endpoints de la API
-
-### GET `/`
-Sirve la página web principal.
-
-### POST `/ingest`
-Recibe datos del sensor.
-
-**Parámetros:**
-- `v` (float): Voltaje del sensor
-- `pct` (float): Porcentaje/humedad
-
-### GET `/api/status`
-Retorna el estado actual de la predicción.
-
-**Respuesta:**
-```json
-{
-    "alerta": "ROJO",
-    "riesgo_zona": "ALTO",
-    "riesgo_score": 72.5,
-    "nivel_sensor": 3,
-    "coordenadas": {
-        "latitud": 19.5041017692,
-        "longitud": -99.0986932319
-    }
-}
-```
-
-## 📱 Responsive
-La interfaz se adapta automáticamente a:
-- Pantallas de escritorio (1400px+)
-- Tablets (1024px)
-- Móviles (768px)
-
-## 🔄 Actualización automática
-La página se actualiza automáticamente cada 2 segundos, obteniéndose del endpoint `/api/status`.
-
-## 📦 Dependencias
-
-- Flask (para el servidor)
-- Leaflet.js (para el mapa - CDN)
-
-No requiere instalaciones adicionales de JavaScript.
-
-## 💡 Tips
-
-- Mantén el navegador abierto en la pestaña del dashboard para ver actualizaciones en tiempo real
-- El historial se mantiene en memoria del cliente (se limpia al recargar la página)
-- Puedes hacer zoom en el mapa con rueda del ratón
-- Haz clic en el marcador para ver las coordenadas exactas
-
-## 🆘 Solución de problemas
-
-### "No se carga la página"
-- Verifica que Flask esté corriendo: `python Flask_Server.py`
-- Asegúrate que el puerto 5000 está disponible
-
-### "Los datos no se actualizan"
-- Verifica que estés enviando datos al endpoint `/ingest`
-- Revisa la consola del navegador (F12) para errores
-
-### "El mapa no aparece"
-- Requiere conexión a internet (para cargar OpenStreetMap)
-- Verifica la consola del navegador para errores de CORS
-
----
-
-**Creado:** Diciembre 2025  
-**Sistema:** Alerta de Inundaciones CDMX  
-**Responsable:** Proyecto Terminal (TT2)
+The root README contains the [API reference](../README.md#api-and-repository-map).
+If the page stays in its waiting state, confirm `/ingest` received numeric `v` and
+`pct` values. If the map is missing, check network access and browser console errors.

@@ -1,57 +1,44 @@
-# Tests del Sistema de Alertas de Inundación
+# Diagnostic scripts
 
-Esta carpeta contiene los archivos de prueba para validar el funcionamiento del sistema de predicción de alertas de inundación.
+These are manual diagnostics for the Mexico City flood-risk prototype. They print
+predictions and comparisons but contain no assertions or explicit failure exits
+for incorrect results. They are not an automated regression-test suite.
 
-## Archivos de prueba:
+| Script | What it exercises |
+| --- | --- |
+| `test_fix.py` | Calls the actual `Realtime.predecir_alerta_con_coordenadas` function and prints whether a known dataset coordinate returns score 39.2 |
+| `test_coordenadas_especificas.py` | Tests the currently configured point `(19.526544451, -99.165879364)` with all four sensor levels and compares dataset/model scores |
+| `test_correccion.py` | Prints several correction scenarios, including a low-risk point and coordinates outside Mexico City |
 
-### `test_coordenadas_especificas.py`
-- **Propósito**: Prueba coordenadas específicas solicitadas por el usuario
-- **Coordenadas**: (19.4949629462, -99.1486655987)
-- **Funcionalidad**: 
-  - Valida si las coordenadas están dentro de CDMX
-  - Prueba los 4 niveles de sensor (0-3)
-  - Analiza patrones de alertas
-  - Compara con datos del dataset si están disponibles
+The two scripts in this directory implement their own copies of inference/alert
+rules. They do not exercise the current dataset-first production inference path.
+The coordinate description and machine-specific command inside the first script's
+original docstring are stale; the table above describes the executed values.
+Consolidating these scripts is separate from the formatting/configuration cleanup.
 
-### `test_correccion.py`
-- **Propósito**: Verifica que se corrigieron los problemas originales
-- **Casos de prueba**:
-  - Coordenadas con bajo % de área inundable
-  - Coordenadas hardcoded del sistema
-  - Coordenadas fuera de CDMX
-  - Pruebas con diferentes niveles de sensor
+## Run locally
 
-## Cómo ejecutar los tests:
+Install the Python 3.11 dependencies using the [main setup guide](../README.md).
+From the repository root, with the virtual environment activated:
 
 ```bash
-# Desde la raíz del repositorio
+python tests/test_fix.py
 python tests/test_coordenadas_especificas.py
-
-# Este diagnóstico busca el modelo en el directorio actual
+# This script resolves the model relative to the working directory.
 cd src
 python ../tests/test_correccion.py
 ```
 
-## Estructura del sistema:
+On Windows, set `$env:PYTHONUTF8 = "1"` if your terminal cannot print the scripts'
+Unicode output. If GNU Make is available, `make test` runs the same three scripts
+from the repository root and sets UTF-8 mode.
 
-```
-TT2/
-├── src/
-│   ├── Modelo.py                 # Entrenamiento del modelo
-│   ├── Realtime.py              # Sistema de predicción en tiempo real
-│   ├── Flask_Server.py          # Servidor web
-│   ├── procesar_dataset.py      # Procesamiento de datos
-│   ├── modelo_predictivo.pkl    # Modelo entrenado
-│   └── dataset_procesado.csv    # Dataset procesado
-├── tests/
-│   ├── README.md               # Este archivo
-│   └── test_*.py              # Archivos de prueba
-└── requirements.txt           # Dependencias
-```
+## CI and interpretation
 
-## Correcciones implementadas:
+GitHub Actions runs Ruff lint/format checks and these scripts as **smoke checks**.
+An import error, missing model, or uncaught exception fails the workflow. A printed
+success message or zero exit status does not verify the prediction or business
+rules. Review the printed results; an assertion-based suite remains future work.
 
-✅ **Thresholds corregidos**: BAJO ≤45, MEDIO ≤65, ALTO >65  
-✅ **Validación geográfica**: Advertencias para coordenadas fuera de CDMX  
-✅ **Alertas apropiadas**: Zonas con bajo % área ya no dan rojas incorrectas  
-✅ **20 zonas BAJO riesgo**: Ahora el dataset tiene zonas de bajo riesgo  
+The scripts load the existing model and dataset. They do not require ESP32 hardware,
+start the server, or retrain the model.
